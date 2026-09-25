@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Panel `/admin` para operar la tienda: estado de Ninox, pedidos y (según `PLAN.md`) catálogo, vitrina y configuración.
+Panel `/admin` para operar la tienda: estado de Ninox, pedidos y (según [plan.md](../plan.md)) catálogo, vitrina y configuración.
 
 ## Código
 

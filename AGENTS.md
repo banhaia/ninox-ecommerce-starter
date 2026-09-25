@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Instrucciones para agentes (Codex, Cursor, Copilot, etc.). La guía completa está en [`CLAUDE.md`](CLAUDE.md); la hoja de ruta en [`PLAN.md`](PLAN.md); el playbook de integración con Ninox en [`.claude/agents/ninox-integration-expert.md`](.claude/agents/ninox-integration-expert.md). Para React Router hay una skill en `.agents/skills/react-router/`.
+Instrucciones para agentes (Codex, Cursor, Copilot, etc.). La guía completa está en [`CLAUDE.md`](CLAUDE.md); la hoja de ruta en [`docs/plan.md`](docs/plan.md); el playbook de integración con Ninox en [`.claude/agents/ninox-integration-expert.md`](.claude/agents/ninox-integration-expert.md). Para React Router hay una skill en `.agents/skills/react-router/`.
 
 ## Estructura
 

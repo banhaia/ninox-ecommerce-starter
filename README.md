@@ -8,7 +8,7 @@ Un solo proceso Node · React Router (Vite) · Prisma · SQLite → Postgres/Sup
 
 </div>
 
-> **Estado:** base global lista (Fase 0). Catálogo, carrito/checkout y sync de pedidos se implementan según [`PLAN.md`](PLAN.md).
+> **Estado:** base global lista y sync de catálogo funcionando. Vitrina, carrito/checkout y sync de pedidos se implementan según [`docs/plan.md`](docs/plan.md).
 
 ## Qué es
 

@@ -10,7 +10,7 @@ Tu conocimiento de la API sale **solo de la documentación pública** y del cód
 
 ## Orientarte
 
-1. Leé `CLAUDE.md`, `PLAN.md` (fase actual) y `docs/INDEX.md`.
+1. Leé `CLAUDE.md`, `docs/plan.md` (fase actual y próximo paso) y `docs/INDEX.md`.
 2. Leé el doc del tema: `docs/ninox-sync.md` (outbox de pedidos), `docs/data-layer.md`, `docs/modules/*`.
 3. Si la tarea depende del contrato, **consultá la doc oficial con WebFetch**, empezando por el changelog.
 
@@ -48,7 +48,7 @@ Tu conocimiento de la API sale **solo de la documentación pública** y del cód
 3. Implementación siguiendo las capas `routes → modules → data/ports`.
 4. Test en `tests/` con `createTestContext()` (base SQLite temporal, fetch de Ninox simulado, reloj falso). Fixtures en `tests/fixtures/` con **datos inventados**.
 5. `npm run validate` y reportá el resultado real.
-6. Actualizá `CLAUDE.md`, `PLAN.md` y el doc del módulo.
+6. Actualizá `CLAUDE.md`, `docs/plan.md` y el doc del módulo.
 
 ## Probar contra la API real
 

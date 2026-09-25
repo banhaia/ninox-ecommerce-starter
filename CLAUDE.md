@@ -4,7 +4,7 @@ Guía para agentes AI (Claude Code, Codex, Cursor, etc.) que trabajan en este re
 
 Este repo es un **ecommerce chico integrado a Ninox ERP** mediante la [integración de terceros](https://docs.ninox.com.ar/docs/terceros): catálogo sincronizado desde Ninox con campos de vitrina locales, carrito, checkout que guarda el pedido en la base, cierre de la venta por WhatsApp y **sincronización idempotente del pedido con Ninox** (outbox). Es un solo proceso Node (React Router framework mode sobre Vite) deployable en Azure, Vercel y Netlify.
 
-**Estado:** ver `PLAN.md`. Fase 0 (base global) hecha; Fase 1 (catálogo) en curso: el sync con Ninox ya funciona.
+**Estado:** ver `docs/plan.md` (incluye el próximo paso). Fase 0 (base global) hecha; Fase 1 (catálogo) en curso: el sync con Ninox ya funciona.
 
 ## Agente experto
 
@@ -103,7 +103,7 @@ Después de cada cambio:
 - **Cambio de esquema** → nueva migración + Data Model + `docs/data-layer.md` si cambia un puerto.
 - **Nuevo módulo o flujo** → `docs/modules/<nombre>.md` + `docs/INDEX.md`.
 - **Cambio de contrato con Ninox** → `ninox/types.ts` + `docs/ninox-sync.md`.
-- **Fase terminada** → marcarla en `PLAN.md`.
+- **Fase terminada** → marcarla en `docs/plan.md`.
 - Antes de commitear: `npm run validate`.
 
 ## Documentación externa

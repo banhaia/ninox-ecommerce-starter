@@ -6,7 +6,7 @@
 | [data-layer.md](data-layer.md) | Puertos, adaptador Prisma, SQLite → Postgres/Supabase, adaptador Mongo |
 | [ninox-sync.md](ninox-sync.md) | Outbox de pedidos hacia Ninox: estados, idempotencia, conciliación |
 | [deploy.md](deploy.md) | Azure App Service, Vercel, Netlify |
-| [../PLAN.md](../PLAN.md) | Hoja de ruta por fases |
+| [plan.md](plan.md) | Hoja de ruta por fases, estado actual y próximo paso |
 
 ## Módulos
 

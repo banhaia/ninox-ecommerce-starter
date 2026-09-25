@@ -1,6 +1,6 @@
 # Deploy
 
-> Estado: el camino Node (Azure/Docker) funciona hoy con `npm run build && npm start`. Los presets de Vercel y Netlify y el cron se completan en la Fase 4 de `PLAN.md`.
+> Estado: el camino Node (Azure/Docker) funciona hoy con `npm run build && npm start`. Los presets de Vercel y Netlify y el cron se completan en la Fase 4 de [plan.md](plan.md).
 
 ## Variables de entorno
 

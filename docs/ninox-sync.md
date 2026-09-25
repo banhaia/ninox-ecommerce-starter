@@ -1,6 +1,6 @@
 # Sincronización de pedidos con Ninox
 
-> Estado: el outbox (tablas, repositorio y garantías) está implementado y testeado. El despachador, el cron y la UI de seguimiento son la Fase 3 de `PLAN.md`.
+> Estado: el outbox (tablas, repositorio y garantías) está implementado y testeado. El despachador, el cron y la UI de seguimiento son la Fase 3 de [plan.md](plan.md).
 
 ## Principio
 
