@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { appContext } from "~/.server/context";
 import { getStoreSettings } from "~/.server/modules/settings/service";
 import { Badge } from "~/components/ui/badge";
@@ -61,6 +62,9 @@ export default function AdminDashboard({ loaderData }: Route.ComponentProps) {
               ? `${lastSync.status} · ${lastSync.articulos} artículos · ${new Date(lastSync.startedAt).toLocaleString("es-AR")}`
               : "Nunca"}
           </p>
+          <Link to="/admin/productos" className="mt-2 inline-block text-sm text-primary underline">
+            Sincronizar catálogo
+          </Link>
         </Card>
       </div>
 

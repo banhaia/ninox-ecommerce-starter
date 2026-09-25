@@ -4,7 +4,7 @@ Guía para agentes AI (Claude Code, Codex, Cursor, etc.) que trabajan en este re
 
 Este repo es un **ecommerce chico integrado a Ninox ERP** mediante la [integración de terceros](https://docs.ninox.com.ar/docs/terceros): catálogo sincronizado desde Ninox con campos de vitrina locales, carrito, checkout que guarda el pedido en la base, cierre de la venta por WhatsApp y **sincronización idempotente del pedido con Ninox** (outbox). Es un solo proceso Node (React Router framework mode sobre Vite) deployable en Azure, Vercel y Netlify.
 
-**Estado:** ver `PLAN.md`. La Fase 0 (base global) está hecha; las fases de producto se implementan en orden.
+**Estado:** ver `PLAN.md`. Fase 0 (base global) hecha; Fase 1 (catálogo) en curso: el sync con Ninox ya funciona.
 
 ## Agente experto
 
@@ -67,7 +67,7 @@ Esquema en `prisma/schema.prisma`, migraciones en `prisma/migrations/` (solo hac
 Config en `app/routes.ts`.
 
 - Tienda (layout `routes/store/layout.tsx`): `/` inicio.
-- Admin: `/admin/login`, `POST /admin/logout`; detrás de `routes/admin/layout.tsx` (middleware de sesión): `/admin` inicio (estado de Ninox, último sync, pedidos por estado).
+- Admin: `/admin/login`, `POST /admin/logout`; detrás de `routes/admin/layout.tsx` (middleware de sesión): `/admin` inicio (estado de Ninox, último sync, pedidos por estado), `/admin/productos` (listado con buscador, `POST intent=sync` sincroniza con GetData).
 - Recursos: `GET /healthz` (200 si la base responde).
 
 ### Frontend Structure

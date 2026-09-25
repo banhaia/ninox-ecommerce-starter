@@ -34,12 +34,14 @@ function toSummary(row: SummaryRow): ProductSummary {
   const imagenes = parseImages(row.showcase?.imagenes);
   return {
     articuloId: row.articuloId,
+    codigo: row.codigo,
     slug: row.showcase?.slug ?? slugify(row.nombre, row.articuloId),
     nombre: row.nombre,
     precio: row.precio.toNumber(),
     stockTotal: row.stockTotal,
     imagen: imagenes[0] ?? row.imagenNinox,
-    destacado: row.showcase?.destacado ?? false
+    destacado: row.showcase?.destacado ?? false,
+    visible: row.showcase?.visible ?? true
   };
 }
 
@@ -47,11 +49,9 @@ function toDetail(row: DetailRow): ProductDetail {
   const imagenes = parseImages(row.showcase?.imagenes);
   return {
     ...toSummary(row),
-    codigo: row.codigo,
     descripcion: row.showcase?.descripcion ?? row.descripcionNinox,
     talleColor: row.talleColor,
     imagenes: imagenes.length > 0 ? imagenes : row.imagenNinox ? [row.imagenNinox] : [],
-    visible: row.showcase?.visible ?? true,
     orden: row.showcase?.orden ?? 0,
     variants: row.variants.map((variant) => ({
       articuloId: variant.articuloId,
@@ -234,7 +234,15 @@ export function createCatalogRepository(db: Db): CatalogRepository {
     },
 
     async lastSyncRun() {
-      const row = await db.catalogSyncRun.findFirst({ orderBy: { startedAt: "desc" } });
+      const row = await db.catalogSyncRun.findFirst({ orderBy: [{ startedAt: "desc" }, { id: "desc" }] });
+      return row ? toSyncRun(row) : null;
+    },
+
+    async lastSuccessfulSyncRun() {
+      const row = await db.catalogSyncRun.findFirst({
+        where: { status: "ok" },
+        orderBy: [{ startedAt: "desc" }, { id: "desc" }]
+      });
       return row ? toSyncRun(row) : null;
     }
   };

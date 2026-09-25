@@ -12,5 +12,6 @@
 
 | Módulo | Documento | Código |
 |---|---|---|
+| Catálogo | [modules/catalogo.md](modules/catalogo.md) | `app/.server/modules/catalog/`, `app/routes/admin/products.tsx` |
 | Cliente Ninox | [modules/cliente-ninox.md](modules/cliente-ninox.md) | `app/.server/ninox/` |
 | Admin y configuración | [modules/admin.md](modules/admin.md) | `app/.server/modules/auth/`, `app/.server/modules/settings/`, `app/routes/admin/` |

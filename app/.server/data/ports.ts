@@ -41,6 +41,7 @@ export interface CatalogItemInput {
 
 export interface ProductSummary {
   articuloId: number;
+  codigo: string;
   slug: string;
   nombre: string;
   precio: number;
@@ -48,6 +49,7 @@ export interface ProductSummary {
   /** Primera imagen de vitrina o, si no hay, la de Ninox. */
   imagen: string | null;
   destacado: boolean;
+  visible: boolean;
 }
 
 export interface VariantInfo extends VariantInput {
@@ -61,11 +63,9 @@ export interface TagInfo {
 }
 
 export interface ProductDetail extends ProductSummary {
-  codigo: string;
   descripcion: string | null;
   talleColor: number;
   imagenes: string[];
-  visible: boolean;
   orden: number;
   variants: VariantInfo[];
   tags: TagInfo[];
@@ -127,6 +127,7 @@ export interface CatalogRepository {
   startSyncRun(trigger: SyncRun["trigger"], at: Date): Promise<number>;
   finishSyncRun(id: number, result: { status: SyncRunStatus; articulos?: number; error?: string | null }, at: Date): Promise<void>;
   lastSyncRun(): Promise<SyncRun | null>;
+  lastSuccessfulSyncRun(): Promise<SyncRun | null>;
 }
 
 // ── Pedidos ─────────────────────────────────────────────────────────────────

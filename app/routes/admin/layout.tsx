@@ -10,7 +10,10 @@ export const middleware: Route.MiddlewareFunction[] = [
   }
 ];
 
-const NAV = [{ to: "/admin", label: "Inicio", end: true }];
+const NAV = [
+  { to: "/admin", label: "Inicio", end: true },
+  { to: "/admin/productos", label: "Productos", end: false }
+];
 
 export default function AdminLayout() {
   return (

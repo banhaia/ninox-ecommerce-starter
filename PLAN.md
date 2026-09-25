@@ -26,7 +26,13 @@ Hoja de ruta del starter. Cada fase termina con `npm run validate` en verde, tes
 - [x] Tests: cliente Ninox, rate limiter, capa de datos (counter concurrente, claim concurrente, locks vencidos), auth y settings.
 - [x] Docs: `CLAUDE.md`, `AGENTS.md`, `README.md`, `docs/`, agente experto.
 
-## Fase 1: Catálogo
+## Fase 1: Catálogo (en curso)
+
+- [x] Mapper de GetData, `syncCatalog` (manual) y `syncCatalogIfDue` (programado), con tests.
+- [x] `/admin/productos`: listado, buscador, botón "Sincronizar con Ninox" y estado del último sync.
+- [ ] Vitrina (`/admin/productos/:id`) y páginas de la tienda.
+
+Detalle:
 
 - `modules/catalog/mapper.ts`: `NinoxArticulo → CatalogItemInput` (portar la tolerancia de nombres alternativos del starter original: `nombre ?? descripcion ?? descripcionWeb ?? codigo`, `precioVenta ?? precio1`, stock desde `stockTotal` o suma de la curva).
 - `modules/catalog/sync.ts`: `syncCatalog(ctx, trigger)` con `CatalogSyncRun`; manual usa `take()` (429 si la ventana no está libre), programado usa la ventana y `CATALOG_SYNC_MINUTES`.
