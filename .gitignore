@@ -1,0 +1,37 @@
+# Dependencias y builds
+node_modules/
+build/
+coverage/
+.react-router/
+
+# Cliente Prisma generado (se regenera en postinstall)
+app/.server/data/prisma/generated/
+
+# Datos en tiempo de ejecución — NUNCA commitear
+/data/
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+*.sqlite
+.tmp/
+
+# Secretos
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Editores y sistema operativo
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Deploy
+.vercel/
+.netlify/

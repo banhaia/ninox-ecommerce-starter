@@ -1,0 +1,213 @@
+// Esquema de la tienda. Portable entre SQLite (dev) y Postgres (Supabase):
+// - estados como String (la unión de valores válidos vive en app/.server/data/ports.ts);
+// - JSON guardado como String;
+// - montos como Decimal (el adaptador los convierte a number para el dominio).
+// Para pasar a Postgres: cambiar `provider` y el adapter (ver docs/data-layer.md).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/.server/data/prisma/generated"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ── Catálogo ────────────────────────────────────────────────────────────────
+
+/// Artículo tal como llega de Ninox (GetData). Solo lo escribe el sync.
+model Product {
+  articuloId       Int       @id
+  codigo           String
+  nombre           String
+  descripcionNinox String?
+  /// nombre + código en minúsculas y sin acentos: búsqueda portable entre SQLite y Postgres.
+  searchText       String    @default("")
+  /// 0 NINGUNO, 1 TALLES, 2 COLORES, 3 TALLES_COLORES
+  talleColor       Int       @default(0)
+  precio           Decimal
+  stockTotal       Int       @default(0)
+  imagenNinox      String?
+  eliminado        Boolean   @default(false)
+  rawJson          String
+  syncedAt         DateTime
+
+  showcase ProductShowcase?
+  variants Variant[]
+  tags     ProductTag[]
+
+  @@index([eliminado])
+}
+
+/// Campos de vitrina editables desde el admin. El sync crea la fila si falta y nunca la pisa.
+model ProductShowcase {
+  articuloId  Int      @id
+  slug        String   @unique
+  descripcion String?
+  /// JSON: array de URLs de imágenes.
+  imagenes    String   @default("[]")
+  destacado   Boolean  @default(false)
+  orden       Int      @default(0)
+  visible     Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+
+  product Product @relation(fields: [articuloId], references: [articuloId], onDelete: Cascade)
+
+  @@index([destacado, orden])
+}
+
+/// Variante (curva talle/color). talleId/colorId en 0 = sin talle/color.
+model Variant {
+  id           Int     @id @default(autoincrement())
+  articuloId   Int
+  colorId      Int     @default(0)
+  talleId      Int     @default(0)
+  colorNombre  String?
+  colorHex     String?
+  talleNombre  String?
+  codigoBarras String?
+  unidades     Int     @default(0)
+
+  product Product @relation(fields: [articuloId], references: [articuloId], onDelete: Cascade)
+
+  @@unique([articuloId, colorId, talleId])
+}
+
+/// tipo: 0 TAG, 1 CATEGORIA, 2 MARCA, 3 TEMPORADA
+model Tag {
+  tagId     Int     @id
+  tipo      Int
+  nombre    String
+  padreId   Int?
+  destacada Boolean @default(false)
+
+  products ProductTag[]
+}
+
+model ProductTag {
+  articuloId Int
+  tagId      Int
+
+  product Product @relation(fields: [articuloId], references: [articuloId], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [tagId], onDelete: Cascade)
+
+  @@id([articuloId, tagId])
+}
+
+model CatalogSyncRun {
+  id         Int       @id @default(autoincrement())
+  /// manual | scheduled
+  trigger    String
+  /// running | ok | error | skipped
+  status     String
+  articulos  Int       @default(0)
+  error      String?
+  startedAt  DateTime
+  finishedAt DateTime?
+
+  @@index([startedAt])
+}
+
+// ── Pedidos ─────────────────────────────────────────────────────────────────
+
+model Order {
+  id              String   @id @default(cuid())
+  /// Código corto y público: se muestra al cliente y viaja en el mensaje de WhatsApp.
+  code            String   @unique
+  clienteNombre   String
+  clienteEmail    String
+  clienteTelefono String
+  clienteDni      String?
+  /// retiro | envio
+  entrega         String
+  direccion       String?
+  localidad       String?
+  provincia       String?
+  codigoPostal    String?
+  notas           String?
+  subtotal        Decimal
+  envio           Decimal  @default(0)
+  descuento       Decimal  @default(0)
+  total           Decimal
+  createdAt       DateTime @default(now())
+
+  items  OrderItem[]
+  sync   OrderSync?
+  events OrderEvent[]
+
+  @@index([createdAt])
+}
+
+/// Línea del pedido con precio y nombre congelados al momento de comprar.
+model OrderItem {
+  id          Int     @id @default(autoincrement())
+  orderId     String
+  articuloId  Int
+  colorId     Int     @default(0)
+  talleId     Int     @default(0)
+  nombre      String
+  variante    String?
+  precio      Decimal
+  cantidad    Int
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+/// Outbox hacia Ninox: un registro por pedido con el payload congelado y el estado del envío.
+model OrderSync {
+  orderId       String    @id
+  /// Clave de idempotencia enviada a Ninox (ordenId y numero). Nunca cambia.
+  ordenId       Int       @unique
+  /// pending | sending | created | failed | unknown | cancelled
+  status        String
+  payloadJson   String
+  attempts      Int       @default(0)
+  nextAttemptAt DateTime
+  lockedUntil   DateTime?
+  facturaId     Int?
+  responseJson  String?
+  lastError     String?
+  updatedAt     DateTime  @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([status, nextAttemptAt])
+}
+
+/// Línea de tiempo del pedido (creación, envíos a Ninox, conciliación, cancelación).
+model OrderEvent {
+  id        Int      @id @default(autoincrement())
+  orderId   String
+  type      String
+  message   String
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+}
+
+// ── Infraestructura ─────────────────────────────────────────────────────────
+
+/// Configuración editable desde el admin (clave/valor).
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+/// Secuencias atómicas (por ejemplo el ordenId de Ninox). Seguro con varias instancias.
+model Counter {
+  name  String @id
+  value Int
+}
+
+/// Ventanas de rate limit de Ninox. Persistidas: en serverless no hay memoria compartida.
+model RateBucket {
+  bucket        String   @id
+  nextAllowedAt DateTime
+  lastStatus    String?
+  updatedAt     DateTime @updatedAt
+}

@@ -1,0 +1,43 @@
+[
+  {
+    "articuloId": 1001,
+    "codigo": "REM-001",
+    "nombre": "Remera Básica",
+    "descripcion": "Remera básica de algodón",
+    "descripcionWeb": "Remera básica de algodón peinado, corte recto.",
+    "talleColor": 3,
+    "precio1": 15000,
+    "precio2": 13500,
+    "precio3": 0,
+    "precio4": 0,
+    "precio5": 0,
+    "stockTotal": 12,
+    "curva": [
+      { "articuloId": 1001, "colorId": 1, "talleId": 10, "colorNombre": "Blanco", "colorCodigo": "BL", "colorHex": "#ffffff", "talleNombre": "M", "talleCodigo": "M", "unidades": 5 },
+      { "articuloId": 1001, "colorId": 1, "talleId": 11, "colorNombre": "Blanco", "colorCodigo": "BL", "colorHex": "#ffffff", "talleNombre": "L", "talleCodigo": "L", "unidades": 4 },
+      { "articuloId": 1001, "colorId": 2, "talleId": 10, "colorNombre": "Negro", "colorCodigo": "NG", "colorHex": "#000000", "talleNombre": "M", "talleCodigo": "M", "unidades": 3 }
+    ],
+    "tags": [
+      { "articuloId": 1001, "articuloTagId": 1, "tipo": 1, "tagId": 50, "tagNombre": "Remeras", "padreId": null, "destacada": false },
+      { "articuloId": 1001, "articuloTagId": 2, "tipo": 0, "tagId": 60, "tagNombre": "Temporada Verano", "padreId": null, "destacada": true }
+    ]
+  },
+  {
+    "articuloId": 1002,
+    "codigo": "TAZ-010",
+    "nombre": "Taza Cerámica",
+    "descripcion": "Taza de cerámica 300 ml",
+    "descripcionWeb": null,
+    "talleColor": 0,
+    "precio1": 4500,
+    "precio2": 4000,
+    "precio3": 0,
+    "precio4": 0,
+    "precio5": 0,
+    "stockTotal": 0,
+    "curva": [],
+    "tags": [
+      { "articuloId": 1002, "articuloTagId": 3, "tipo": 1, "tagId": 51, "tagNombre": "Bazar", "padreId": null, "destacada": false }
+    ]
+  }
+]
