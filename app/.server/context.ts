@@ -1,6 +1,7 @@
 import { createContext } from "react-router";
 import { getConfig } from "./config";
 import { createRepositories, type Repositories } from "./data";
+import { trustSystemCertificates } from "./lib/tls";
 import { NINOX_BASE_URLS, NinoxClient } from "./ninox/client";
 import { NinoxNotConfiguredError } from "./ninox/errors";
 import { RateLimiter } from "./ninox/rate-limiter";
@@ -56,19 +57,21 @@ export function createAppContext(options: ContextOptions): AppContext {
   };
 }
 
-// En dev, Vite recarga módulos: se guarda en globalThis para no abrir un cliente Prisma por recarga.
-const globalForContext = globalThis as typeof globalThis & { __appContext?: AppContext };
+// En dev, Vite recarga módulos. Solo los repositorios (la conexión a la base) sobreviven en
+// globalThis; el contexto se rearma por recarga para que el cliente y las clases de error
+// sean las del módulo vigente (si no, `instanceof` falla entre versiones).
+const globalForRepos = globalThis as typeof globalThis & { __repos?: Repositories };
+let processContext: AppContext | undefined;
 
 /** Contexto del proceso, armado desde las variables de entorno. */
 export function getAppContext(): AppContext {
-  if (!globalForContext.__appContext) {
+  if (!processContext) {
     const config = getConfig();
-    globalForContext.__appContext = createAppContext({
-      repos: createRepositories(config.databaseUrl),
-      ninox: config.ninox
-    });
+    trustSystemCertificates();
+    globalForRepos.__repos ??= createRepositories(config.databaseUrl);
+    processContext = createAppContext({ repos: globalForRepos.__repos, ninox: config.ninox });
   }
-  return globalForContext.__appContext;
+  return processContext;
 }
 
 /** Clave para leer el AppContext desde loaders y actions: `context.get(appContext)`. */

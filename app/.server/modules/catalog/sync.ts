@@ -45,7 +45,7 @@ export async function syncCatalog(ctx: AppContext, trigger: SyncTrigger): Promis
     const skipped = error instanceof RateLimitedError;
     const message = describeSyncError(error);
     await ctx.repos.catalog.finishSyncRun(runId, { status: skipped ? "skipped" : "error", error: message }, ctx.now());
-    if (!skipped) console.warn(`[catalog] sync ${trigger} falló: ${message}`);
+    if (!skipped) console.warn(`[catalog] sync ${trigger} falló: ${error instanceof Error ? error.message : message}`);
     return {
       ok: false,
       skipped,

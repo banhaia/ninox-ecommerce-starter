@@ -42,6 +42,7 @@ Node 24 (`.nvmrc`), mínimo 22.22 (lo exige React Router 8).
 - **Contexto** (`app/.server/context.ts`): `AppContext { repos, limiter, now(), ninoxEnv, hasNinox(), ninox() }`. El middleware de `app/root.tsx` lo inyecta y las rutas lo leen con `context.get(appContext)`. En tests: `createTestContext()` de `tests/helpers.ts`.
 - **Datos** (`app/.server/data/`): `ports.ts` (interfaces y tipos de dominio), `index.ts` (`createRepositories`, único lugar que elige adaptador), `prisma/` (adaptador: Prisma 7 + `@prisma/adapter-better-sqlite3`). Ver `docs/data-layer.md`.
 - **Cliente Ninox** (`app/.server/ninox/`): `client.ts` (timeout, reintentos solo en GET), `errors.ts` (`NinoxApiError`, `NinoxNetworkError{sent,timedOut}`, `RateLimitedError`, `NinoxNotConfiguredError`), `rate-limiter.ts` (ventanas persistidas en `RateBucket`, reserva atómica), `types.ts`.
+- **TLS** (`app/.server/lib/tls.ts`): suma los certificados raíz del SO (desactivable con `TLS_USE_SYSTEM_CA=false`).
 - **Config** (`app/.server/config.ts`): env validado con zod; `.env` se carga con `process.loadEnvFile` (se ignora bajo Vitest).
 
 ### Data Model
@@ -80,7 +81,7 @@ Config en `app/routes.ts`.
 ## Integración Ninox: reglas que el código respeta
 
 - **Token solo en env** (`NINOX_TOKEN`, `NINOX_ENV=test|prod`, `NINOX_BASE_URL` opcional). Nunca en la base ni en el navegador.
-- **Rate limits** (`ninox/rate-limiter.ts`), prod / test: `masivo` 600 s / 180 s (GetData), `parametros` y `comprobante` 10 s / 3 s. Acciones manuales usan `take()` (falla rápido), procesos programados `acquire()` (espera). Un 403 "Debe esperar N segundos" actualiza el bucket.
+- **Rate limits** (`ninox/rate-limiter.ts`), prod / test: `masivo` 600 s / 180 s (GetData), `parametros` y `comprobante` 10 s / 3 s. Acciones manuales usan `take()` (falla rápido), procesos programados `acquire()` (espera). Un 403 "Debe esperar N segundos" actualiza el bucket. Si la request no llegó (`sent: false`), la reserva de la ventana se libera.
 - **Pedidos (preventa, `Terceros/Pedido`)**: `total = subtotal + envio + recargo - descuento`; `usuario` con dni/cuit/email; éxito solo si `facturaId > 0`. `numero = ordenId`.
 - **Idempotencia (outbox)**: el pedido se guarda con `OrderSync(pending)` y payload congelado antes de hablar con Ninox. El envío toma el pedido con un claim atómico + lock. Solo se reintenta solo si el POST **no llegó** (`sent: false`). Timeout, corte o 5xx → `unknown`, nunca reintento automático. Lock vencido → `unknown`. Ver `docs/ninox-sync.md`.
 - **Catálogo**: reemplazo completo en transacción; lo que no viene queda `eliminado`; la vitrina nunca se pisa.

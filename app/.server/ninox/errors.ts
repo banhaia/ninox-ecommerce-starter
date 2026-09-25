@@ -31,16 +31,26 @@ export class NinoxNetworkError extends Error {
   }
 }
 
-/** La ventana de rate limit del bucket no está libre (local o por 403 "Debe esperar N segundos"). */
+/**
+ * La ventana de rate limit del bucket no está libre.
+ * - `local`: la app se frenó sola para respetar la ventana (no llamó a la API).
+ * - `api`: la API respondió 403 "Debe esperar N segundos".
+ */
 export class RateLimitedError extends Error {
   readonly bucket: RateBucket;
   readonly retryAfterSeconds: number;
+  readonly source: "local" | "api";
 
-  constructor(bucket: RateBucket, retryAfterSeconds: number) {
-    super(`Ninox limita esta consulta: esperá ${retryAfterSeconds} segundos antes de reintentar.`);
+  constructor(bucket: RateBucket, retryAfterSeconds: number, source: "local" | "api") {
+    super(
+      source === "api"
+        ? `La API pidió esperar ${retryAfterSeconds} segundos antes de reintentar.`
+        : `Todavía no pasó la ventana mínima entre consultas: esperá ${retryAfterSeconds} segundos (la app no llamó a la API).`
+    );
     this.name = "RateLimitedError";
     this.bucket = bucket;
     this.retryAfterSeconds = retryAfterSeconds;
+    this.source = source;
   }
 }
 

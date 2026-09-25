@@ -19,7 +19,7 @@ describe("RateLimiter", () => {
     expect((error as RateLimitedError).retryAfterSeconds).toBe(181);
 
     advance(ctx.limiter.windowMs("masivo"));
-    await expect(ctx.limiter.take("masivo")).resolves.toBeUndefined();
+    await expect(ctx.limiter.take("masivo")).resolves.toMatchObject({ bucket: "masivo" });
   });
 
   it("acquire() espera la ventana en lugar de fallar", async () => {
@@ -36,6 +36,19 @@ describe("RateLimiter", () => {
     const { ctx } = current;
     const results = await Promise.allSettled([ctx.limiter.take("comprobante"), ctx.limiter.take("comprobante")]);
     expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
+  });
+
+  it("release() libera la ventana solo si nadie la cambió desde la reserva", async () => {
+    current = createTestContext();
+    const { ctx } = current;
+    const reservation = await ctx.limiter.take("masivo");
+    await ctx.limiter.release(reservation);
+    expect(await ctx.limiter.remainingMs("masivo")).toBe(0);
+
+    const second = await ctx.limiter.take("masivo");
+    await ctx.limiter.penalize("masivo", 300);
+    await ctx.limiter.release(second);
+    expect(await ctx.limiter.remainingMs("masivo")).toBe(301_000);
   });
 
   it("parsea el mensaje de espera de Ninox", () => {

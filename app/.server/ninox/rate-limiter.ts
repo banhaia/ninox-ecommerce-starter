@@ -17,6 +17,12 @@ const WINDOWS_SECONDS: Record<RateBucket, { test: number; prod: number }> = {
 /** Margen para no pegarle a Ninox justo en el borde de la ventana. */
 const SAFETY_MARGIN_MS = 1000;
 
+/** Ventana reservada antes de una llamada; se libera si la request no llegó. */
+export interface Reservation {
+  bucket: RateBucket;
+  until: Date;
+}
+
 export interface RateLimiterOptions {
   env: "test" | "prod";
   now: () => number;
@@ -65,17 +71,31 @@ export class RateLimiter {
     return next ? Math.max(0, next.getTime() - this.options.now()) : 0;
   }
 
-  /** Acciones manuales: si la ventana no está libre, falla con los segundos restantes. */
-  async take(bucket: RateBucket): Promise<void> {
-    if (await this.tryReserve(bucket)) return;
-    throw new RateLimitedError(bucket, Math.max(1, Math.ceil((await this.remainingMs(bucket)) / 1000)));
+  /**
+   * Acciones manuales: si la ventana no está libre, falla con los segundos restantes.
+   * El límite es local (la app se frena antes de llamar), no una respuesta de Ninox.
+   */
+  async take(bucket: RateBucket): Promise<Reservation> {
+    const reservation = await this.tryReserve(bucket);
+    if (reservation) return reservation;
+    throw new RateLimitedError(bucket, Math.max(1, Math.ceil((await this.remainingMs(bucket)) / 1000)), "local");
   }
 
   /** Procesos en segundo plano: espera a que la ventana se libere. */
-  async acquire(bucket: RateBucket, signal?: AbortSignal): Promise<void> {
-    while (!(await this.tryReserve(bucket))) {
+  async acquire(bucket: RateBucket, signal?: AbortSignal): Promise<Reservation> {
+    for (;;) {
+      const reservation = await this.tryReserve(bucket);
+      if (reservation) return reservation;
       await this.sleep(Math.max(1, await this.remainingMs(bucket)), signal);
     }
+  }
+
+  /**
+   * La request nunca llegó a Ninox (DNS, conexión rechazada, certificado): no consumió
+   * la ventana del lado de Ninox, así que se libera para no bloquear el reintento.
+   */
+  async release(reservation: Reservation): Promise<void> {
+    await this.repo.release(reservation.bucket, reservation.until, new Date(this.options.now()));
   }
 
   /** Ninox respondió 403 "Debe esperar N segundos": se respeta ese valor. */
@@ -83,9 +103,10 @@ export class RateLimiter {
     await this.repo.set(bucket, new Date(this.options.now() + seconds * 1000 + SAFETY_MARGIN_MS), "403");
   }
 
-  private tryReserve(bucket: RateBucket): Promise<boolean> {
+  private async tryReserve(bucket: RateBucket): Promise<Reservation | null> {
     const now = this.options.now();
-    return this.repo.tryReserve(bucket, new Date(now), new Date(now + this.windowMs(bucket)));
+    const until = new Date(now + this.windowMs(bucket));
+    return (await this.repo.tryReserve(bucket, new Date(now), until)) ? { bucket, until } : null;
   }
 }
 

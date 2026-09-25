@@ -87,6 +87,36 @@ describe("NinoxClient", () => {
     expect(await ctx.limiter.remainingMs("masivo")).toBe(121_000);
   });
 
+  it("si la request no llegó (certificado, DNS), libera la ventana del bucket", async () => {
+    let fail = true;
+    const { ctx, calls } = setup({
+      "GET /integraciones/Terceros/GetData": () =>
+        fail ? networkError("DEPTH_ZERO_SELF_SIGNED_CERT") : { body: fixture("getData.json") }
+    });
+    const error = await ctx.ninox().getData().catch((reason: unknown) => reason);
+    expect(error).toBeInstanceOf(NinoxNetworkError);
+    expect((error as NinoxNetworkError).sent).toBe(false);
+    expect(await ctx.limiter.remainingMs("masivo")).toBe(0);
+
+    fail = false;
+    await expect(ctx.ninox().getData()).resolves.toHaveLength(2);
+    expect(calls).toHaveLength(2);
+  });
+
+  it("si la request llegó (timeout), la ventana queda consumida", async () => {
+    const { ctx } = setup({ "GET /integraciones/Terceros/GetData": () => abortError() });
+    await ctx.ninox().getData().catch(() => undefined);
+    expect(await ctx.limiter.remainingMs("masivo")).toBe(ctx.limiter.windowMs("masivo"));
+  });
+
+  it("distingue el límite local del que responde la API", async () => {
+    const { ctx } = setup({ "GET /integraciones/Terceros/GetData": () => ({ body: [] }) });
+    await ctx.ninox().getData();
+    const local = await ctx.ninox().getData().catch((reason: unknown) => reason);
+    expect((local as RateLimitedError).source).toBe("local");
+    expect((local as RateLimitedError).message).toContain("no llamó a la API");
+  });
+
   it("devuelve el motivo del rechazo de Pedido (facturaId 0) sin lanzar", async () => {
     const { ctx } = setup({ "POST /integraciones/Terceros/Pedido": () => ({ body: fixture("pedido-rechazado.json") }) });
     const result = await ctx.ninox().createPedido(pedido);

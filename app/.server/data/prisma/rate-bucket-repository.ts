@@ -22,6 +22,13 @@ export function createRateBucketRepository(db: Db): RateBucketRepository {
       return result.count === 1;
     },
 
+    async release(bucket, reservedUntil, releaseAt) {
+      await db.rateBucket.updateMany({
+        where: { bucket, nextAllowedAt: reservedUntil },
+        data: { nextAllowedAt: releaseAt }
+      });
+    },
+
     async set(bucket, until, lastStatus) {
       await db.rateBucket.upsert({
         where: { bucket },

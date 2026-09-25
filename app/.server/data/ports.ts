@@ -273,6 +273,11 @@ export interface RateBucketRepository {
   nextAllowedAt(bucket: string): Promise<Date | null>;
   /** Reserva la ventana solo si está libre en `now`. Atómico: devuelve false si otro la tomó. */
   tryReserve(bucket: string, now: Date, until: Date): Promise<boolean>;
+  /**
+   * Devuelve una reserva que no se usó (la request nunca llegó): libera la ventana en
+   * `releaseAt`, solo si nadie la modificó desde la reserva (sigue en `reservedUntil`).
+   */
+  release(bucket: string, reservedUntil: Date, releaseAt: Date): Promise<void>;
   /** Fuerza la próxima llamada permitida (por ejemplo tras un 403 "Debe esperar N segundos"). */
   set(bucket: string, until: Date, lastStatus?: string): Promise<void>;
 }

@@ -1,5 +1,5 @@
 import { NinoxApiError, NinoxNetworkError, RateLimitedError } from "./errors";
-import { parseWaitSeconds, type RateBucket, type RateLimiter } from "./rate-limiter";
+import { parseWaitSeconds, type RateBucket, type RateLimiter, type Reservation } from "./rate-limiter";
 import type {
   NinoxArticulo,
   NinoxComprobante,
@@ -52,7 +52,7 @@ function describeNetworkError(error: unknown, baseUrl: string, timeoutMs: number
   const cause = (error as { cause?: { code?: string; message?: string } } | undefined)?.cause;
   const code = cause?.code ?? "";
   if (/CERT|SELF_SIGNED|UNABLE_TO_VERIFY|ERR_TLS/i.test(code)) {
-    return new NinoxNetworkError(`El certificado HTTPS de ${baseUrl} no es de confianza (${code}).`, {
+    return new NinoxNetworkError(`El certificado HTTPS de ${baseUrl} no es de confianza (${code}). Si es un servidor propio, confiá su certificado en el sistema operativo y reiniciá la app.`, {
       sent: false,
       cause: error
     });
@@ -130,14 +130,21 @@ export class NinoxClient {
     const retries = method === "GET" ? (options.retries ?? 0) : 0;
 
     for (let attempt = 0; ; attempt++) {
+      let reservation: Reservation | undefined;
       if (options.bucket) {
         // Un reintento siempre espera la ventana: el intento anterior ya la consumió.
-        if (options.wait || attempt > 0) await this.options.limiter.acquire(options.bucket, options.signal);
-        else await this.options.limiter.take(options.bucket);
+        reservation =
+          options.wait || attempt > 0
+            ? await this.options.limiter.acquire(options.bucket, options.signal)
+            : await this.options.limiter.take(options.bucket);
       }
       try {
         return await this.send<T>(method, path, options);
       } catch (error) {
+        // Si la request no llegó, la API no contó la llamada: se devuelve la ventana.
+        if (reservation && error instanceof NinoxNetworkError && !error.sent) {
+          await this.options.limiter.release(reservation);
+        }
         const retriable = error instanceof NinoxNetworkError || (error instanceof NinoxApiError && error.status >= 500);
         if (!retriable || attempt >= retries) throw error;
         await this.retryDelay(attempt);
@@ -183,7 +190,7 @@ export class NinoxClient {
         const wait = parseWaitSeconds(text);
         if (wait !== null) {
           await this.options.limiter.penalize(options.bucket, wait);
-          throw new RateLimitedError(options.bucket, wait);
+          throw new RateLimitedError(options.bucket, wait, "api");
         }
       }
       throw new NinoxApiError(describeStatus(response.status, detail), response.status, detail);

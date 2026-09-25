@@ -18,7 +18,9 @@
 - Header `X-NX-TOKEN`; timeout `NINOX_TIMEOUT_MS` (30 s por defecto).
 - **POST nunca se reintenta.** GET con `retries` reintenta ante 5xx o error de red, esperando la ventana del bucket.
 - `NinoxNetworkError.sent`: `false` = la request no llegó (seguro reenviar); `true` = timeout o corte (resultado desconocido).
-- 403 "Debe esperar N segundos" → `RateLimitedError` y el bucket queda bloqueado N s + 1 s de margen.
+- 403 "Debe esperar N segundos" → `RateLimitedError` con `source: "api"` y el bucket queda bloqueado N s + 1 s de margen. Si la app se frena sola antes de llamar, `source: "local"`.
+- La ventana se reserva antes de llamar; si la request **no llegó** (`sent: false`) la reserva se libera, porque la API no contó la llamada.
+- Certificados: además de los de Node se usan los raíz del sistema operativo (`app/.server/lib/tls.ts`), así un servidor con certificado propio confiado en el equipo funciona sin desactivar TLS. `TLS_USE_SYSTEM_CA=false` lo apaga.
 - `take()` para acciones manuales (falla rápido), `acquire()` para procesos programados (espera).
 
 | Bucket | Endpoints | Prod | Test |
