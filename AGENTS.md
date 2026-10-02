@@ -1,5 +1,7 @@
 # AGENTS.md
 
+> **¿La persona recién llega?** Si te pidió empezar, todavía no tiene su propia copia del proyecto o nunca levantó la tienda, seguí primero [`ONBOARDING.md`](ONBOARDING.md): onboarding guiado, sin asumir sistema operativo ni herramienta.
+
 Instrucciones para agentes (Codex, Cursor, Copilot, etc.). La guía completa está en [`CLAUDE.md`](CLAUDE.md); la hoja de ruta en [`docs/plan.md`](docs/plan.md); el playbook de integración con Ninox en [`.claude/agents/ninox-integration-expert.md`](.claude/agents/ninox-integration-expert.md). Para React Router hay una skill en `.agents/skills/react-router/`.
 
 ## Estructura

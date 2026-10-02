@@ -6,6 +6,10 @@ Este repo es un **ecommerce chico integrado a Ninox ERP** mediante la [integraci
 
 **Estado:** ver `docs/plan.md` (incluye el próximo paso). Fase 0 (base global) hecha; Fase 1 (catálogo) en curso: el sync con Ninox ya funciona.
 
+## Onboarding
+
+Si la persona recién llega (te pidió empezar, no tiene su propia copia del repo o nunca levantó la tienda), seguí primero [`ONBOARDING.md`](ONBOARDING.md). Para una app de gestión (stock, reservas, ventas, reportes) el starter indicado es [ninox-integration-starters](https://github.com/banhaia/ninox-integration-starters).
+
 ## Agente experto
 
 `.claude/agents/ninox-integration-expert.md` conoce la API de terceros y esta app. Delegale cualquier tarea de integración: sync de catálogo, envío de pedidos, rate limits, errores de Ninox o pruebas contra la API real.

@@ -2,6 +2,7 @@
 
 | Documento | Contenido |
 |---|---|
+| [../ONBOARDING.md](../ONBOARDING.md) | Onboarding guiado para la IA que ayuda a alguien a empezar: copia propia, instalación y primer uso |
 | [architecture.md](architecture.md) | Un proceso, capas, contexto inyectable, flujo de una request |
 | [data-layer.md](data-layer.md) | Puertos, adaptador Prisma, SQLite → Postgres/Supabase, adaptador Mongo |
 | [ninox-sync.md](ninox-sync.md) | Outbox de pedidos hacia Ninox: estados, idempotencia, conciliación |
